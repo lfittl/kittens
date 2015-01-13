@@ -30,9 +30,9 @@ class HerokuLogDrain < Goliath::API
   private
 
   def store_log(log_str)
-    puts log_str
     event_data = HerokuLogParser.parse(log_str)
-    DB[:events].multi_insert(event_data, :commit_every => 10)
+    next unless event_data[:proc_id] == 'router' || event_data[:msg_id] == 'heroku-postgres'
+    DB[:events].insert(event_data)
   end
 
   def self.protected?
