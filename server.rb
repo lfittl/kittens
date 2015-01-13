@@ -24,12 +24,13 @@ class HerokuLogDrain < Goliath::API
       })]
     else
       raise Goliath::Validation::NotFoundError
-    end    
+    end
   end
 
   private
 
   def store_log(log_str)
+    puts log_str
     event_data = HerokuLogParser.parse(log_str)
     DB[:events].multi_insert(event_data, :commit_every => 10)
   end
