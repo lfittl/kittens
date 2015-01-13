@@ -8,4 +8,4 @@ gem 'pg'
 
 gem 'tilt'
 gem 'haml'
-gem 'heroku-log-parser', github: 'rwdaigle/heroku-log-parser'
+gem 'heroku-log-parser', github: 'lfittl/heroku-log-parser', branch: 'fix-regexp'

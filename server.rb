@@ -31,8 +31,22 @@ class HerokuLogDrain < Goliath::API
 
   def store_log(log_str)
     event_data = HerokuLogParser.parse(log_str)
-    return unless event_data[:proc_id] == 'router' || event_data[:msg_id] == 'heroku-postgres'
-    DB[:events].insert(event_data)
+    event_data.each do |evt|
+      next unless failed_router_event?(evt) || evt[:proc_id].include?('postgres')
+      DB[:events].insert(evt)
+    end
+  rescue => e
+    puts e.inspect
+    puts log_str.inspect
+    puts event_data.inspect
+  end
+
+  def failed_router_event?(evt)
+    return unless evt[:proc_id] == 'router'
+    return if evt[:message].include?('status=2') # 2XX
+    return if evt[:message].include?('status=3') # 3XX
+
+    true
   end
 
   def self.protected?
