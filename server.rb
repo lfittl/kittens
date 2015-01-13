@@ -31,7 +31,7 @@ class HerokuLogDrain < Goliath::API
 
   def store_log(log_str)
     event_data = HerokuLogParser.parse(log_str)
-    next unless event_data[:proc_id] == 'router' || event_data[:msg_id] == 'heroku-postgres'
+    return unless event_data[:proc_id] == 'router' || event_data[:msg_id] == 'heroku-postgres'
     DB[:events].insert(event_data)
   end
 

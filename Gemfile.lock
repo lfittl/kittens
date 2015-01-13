@@ -15,7 +15,7 @@ GEM
     em-websocket (0.3.8)
       addressable (>= 2.1.1)
       eventmachine (>= 0.12.9)
-    eventmachine (1.0.0)
+    eventmachine (1.0.4)
     goliath (1.0.1)
       async-rack
       em-synchrony (>= 1.0.0)
