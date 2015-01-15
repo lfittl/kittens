@@ -32,8 +32,13 @@ class HerokuLogDrain < Goliath::API
   def store_log(log_str)
     event_data = HerokuLogParser.parse(log_str)
     event_data.each do |evt|
-      next unless failed_router_event?(evt) || evt[:proc_id].include?('postgres')
-      DB[:events].insert(evt)
+      if router_error?(evt)
+        data = evt[:message_data].except('at', 'bytes')
+        data['emitted_at'] = evt[:emitted_at]
+        DB[:router_errors].insert data
+      elsif interesting_postgres_event?(evt)
+        DB[:postgres_events].insert evt.slice(:emitted_at, :proc_id, :message)
+      end
     end
   rescue => e
     puts e.inspect
@@ -41,10 +46,18 @@ class HerokuLogDrain < Goliath::API
     puts event_data.inspect
   end
 
-  def failed_router_event?(evt)
+  def router_error?(evt)
     return unless evt[:proc_id] == 'router'
-    return if evt[:message].include?('status=2') # 2XX
-    return if evt[:message].include?('status=3') # 3XX
+    return if evt[:message_data]['status'].starts_with?('2') # 2XX
+    return if evt[:message_data]['status'].starts_with?('3') # 2XX
+
+    true
+  end
+
+  def interesting_postgres_event?(evt)
+    return unless evt[:proc_id].include?('postgres')
+    return if !evt[:message_data].empty? # Stats
+    return if evt[:message].include?('checkpoint')
 
     true
   end

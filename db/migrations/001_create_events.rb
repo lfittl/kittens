@@ -3,21 +3,30 @@ Sequel.migration do
 
   up do
     run <<-EOS
-      CREATE table events (
-        id SERIAL8 PRIMARY KEY,
+      CREATE TABLE postgres_events (
         emitted_at TIMESTAMP WITH TIME ZONE,
-        received_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        priority INTEGER,
-        syslog_version INTEGER,
-        hostname TEXT,
-        appname TEXT,
         proc_id TEXT,
-        msg_id TEXT,
-        structured_data TEXT,
         message TEXT
       );
 
-      CREATE INDEX events_emitted_at ON events(emitted_at);
+      CREATE INDEX ON postgres_events(emitted_at);
+
+      CREATE TABLE router_errors (
+        emitted_at TIMESTAMP WITH TIME ZONE,
+        code TEXT,
+        desc TEXT,
+        method TEXT,
+        path TEXT,
+        host TEXT,
+        request_id TEXT
+        fwd TEXT,
+        dyno TEXT,
+        connect TEXT,
+        service TEXT,
+        status INTEGER
+      );
+
+      CREATE INDEX ON router_errors(emitted_at);
     EOS
   end
 

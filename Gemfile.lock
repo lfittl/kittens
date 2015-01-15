@@ -1,9 +1,10 @@
 GIT
   remote: git://github.com/lfittl/heroku-log-parser.git
-  revision: f6a1ace7d89408f9d90dd292493c449926c3c3f4
+  revision: 08b59809b366a989b4e997090659769d6ace216b
   branch: fix-regexp
   specs:
     heroku-log-parser (0.2.2)
+      logfmt
 
 GEM
   remote: https://rubygems.org/
@@ -31,6 +32,7 @@ GEM
     haml (3.1.7)
     http_parser.rb (0.5.3)
     log4r (1.1.10)
+    logfmt (0.0.7)
     multi_json (1.5.0)
     pg (0.18.1)
     rack (1.4.1)
