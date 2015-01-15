@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/lfittl/heroku-log-parser.git
-  revision: 08b59809b366a989b4e997090659769d6ace216b
+  revision: 72f18127e490c5b5018bfe944da60322e7b94350
   branch: fix-regexp
   specs:
     heroku-log-parser (0.2.2)
