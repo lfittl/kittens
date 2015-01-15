@@ -33,7 +33,7 @@ class HerokuLogDrain < Goliath::API
     event_data = HerokuLogParser.parse(log_str)
     event_data.each do |evt|
       if router_error?(evt)
-        data = evt[:message_data].except('at', 'bytes')
+        data = evt[:message_data].slice('code', 'desc', 'method', 'path', 'host', 'request_id', 'fwd', 'dyno', 'connect', 'service', 'status')
         data['emitted_at'] = evt[:emitted_at]
         DB[:router_errors].insert data
       elsif interesting_postgres_event?(evt)
