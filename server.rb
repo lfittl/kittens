@@ -48,8 +48,7 @@ class HerokuLogDrain < Goliath::API
 
   def router_error?(evt)
     return unless evt[:proc_id] == 'router'
-    return if evt[:message_data]['status'].starts_with?('2') # 2XX
-    return if evt[:message_data]['status'].starts_with?('3') # 2XX
+    return if evt[:message_data]['status'] < 400
 
     true
   end
