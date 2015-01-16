@@ -49,6 +49,8 @@ class HerokuLogDrain < Goliath::API
   def router_error?(evt)
     return unless evt[:proc_id] == 'router'
     return if evt[:message_data]['status'] < 400
+    return if evt[:message_data]['status'].in?(401) # Unauthorized
+    return if evt[:message_data]['code'] == 'H18'   # Request Interrupted
 
     true
   end
