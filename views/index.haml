@@ -21,7 +21,7 @@
       %p
         %a{href: '/404'} Lost kittens in last hour (404)
 
-      %h3 Timeouts
+      %h3 Timeouts (#{router_timeouts.count})
       %table
         %tr
           %th Count
@@ -35,7 +35,7 @@
             %td= log[:host]
             %td= log[:path]
 
-      %h3 500s
+      %h3 500s (#{router_500_errors.count})
       %table
         %tr
           %th Count
@@ -51,7 +51,7 @@
             %td= log[:path]
             %td= log[:status]
 
-      %h3 Postgres Log Events
+      %h3 Postgres Log Events (#{postgres_events.count})
       %table
         %tr
           %th

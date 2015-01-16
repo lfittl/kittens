@@ -40,7 +40,7 @@ class HerokuLogDrain < Goliath::API
       router_errors = DB[:router_errors].where('emitted_at > ?', 24.hours.ago).order(Sequel.desc(:count))
 
       locals[:router_timeouts]   = router_errors.where(code: 'H12').group_and_count(:method, :host, :path)
-      locals[:router_500_errors] = router_errors.where("status BETWEEN 500 AND 599 AND code NOT IN ('H12', 'H18')").group_and_count(:method, :host, :path, :status)
+      locals[:router_500_errors] = router_errors.where("status BETWEEN 500 AND 599 AND (code IS NULL OR code NOT IN ('H12', 'H18'))").group_and_count(:method, :host, :path, :status)
       locals[:postgres_events]   = DB[:postgres_events].where('emitted_at > ?', 24.hours.ago).order(Sequel.desc(:emitted_at))
 
       [200, {}, haml(:index, locals: locals)]
@@ -72,7 +72,7 @@ class HerokuLogDrain < Goliath::API
     return unless evt[:proc_id] == 'router'
     return if evt[:message_data]['status'] < 400
     return if evt[:message_data]['status'] == 401 # Unauthorized
-    return if evt[:message_data]['code'] == 'H18'   # Request Interrupted
+    return if evt[:message_data]['code'] == 'H18' # Request Interrupted
 
     true
   end
