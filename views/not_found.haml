@@ -1,0 +1,28 @@
+%html
+  :css
+    body {
+      font-family: 'proxima-nova', 'Proxima Nova', sans-serif;
+      padding: 1em;
+    }
+    h3 {
+      margin-top: 3em;
+    }
+
+  %body
+    %h2 Lost kittens in last hour (404)
+
+    %p
+      %a{href: '/'} Sad kittens in the last 24 hours
+
+    %table
+      %tr
+        %th Count
+        %th Method
+        %th Host
+        %th Path
+      - logs.each do |log|
+        %tr
+          %td= log[:count]
+          %td= log[:method]
+          %td= log[:host]
+          %td= log[:path]

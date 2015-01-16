@@ -1,65 +1,64 @@
 %html
+  :css
+    body {
+      font-family: 'proxima-nova', 'Proxima Nova', sans-serif;
+      padding: 1em;
+    }
+    h3 {
+      margin-top: 2em;
+    }
 
-  %h2 heroku-log-store
-  %p
-    Welcome to your personal instance of
-    %a(href="https://github.com/rwdaigle/heroku-log-store") heroku-log-store - the HTTP-based Heroku log store.
+  %body
+    %h2 Sad kittens in the last 24 hours
 
-  - if !protected
+    - if !protected
 
-    - username, password = "u#{(rand() * 10000).to_i}", SecureRandom.hex
-
-    %h3 Configuration
-    %p
-      Now that your app is deployed, you need to setup authorization using HTTP basic auth. I've randomly generated
-      a username and password for you:
-    %p
-      %b username:
-      #{username}
-      %br/
-      %b password:
-      #{password}
-    %p
-      To set these credentials on your Heroku app, do the following from the command line:
-    %pre
-      %code
-        $ heroku config:set HTTP_AUTH_USER=#{username} HTTP_AUTH_PASSWORD=#{password}
-    %p If you ever forget your credentials you can always retrieve them from the Heroku app config:
-    %pre
-      %code
-        $ heroku config | grep HTTP_AUTH
-    %p Once you set the credentials Heroku will restart the app.
-    %p
-      %b Refresh this page to see further instrucions
-      You will need these credentials to login this time when asked for your username and password. 
-
-  - else
-
-    - drain_url = "https://#{username}:#{password}@#{env['HTTP_HOST']}/drain"
-
-    - if event_count <= 0
-
-      %h3 Configuration
       %p
-        Your log drain URL is:
-        %b #{drain_url}
-      %p To capture and store the logs for an app on Heroku set this heroku-log-store instance to be a log drain for the source app.
-      %pre
-        %code
-          $ heroku drains:add #{drain_url} -a source-app
+        Please set HTTP_AUTH_USER and HTTP_AUTH_PASSWORD.
 
-    %h3 Captured logs
-    %p
-      heroku-log-store has captured
-      %b #{event_count}
-      syslog messages to its drain at:
-      %b #{drain_url}
-    %p To query your logs use the Postgres shell. Log data is stored in the "events" table.
-    %pre
-      %code
-        $ heroku pg:psql -a my-log-drain
+    - else
 
-        123abc=> SELECT proc_id, message FROM events ORDER BY received_at DESC LIMIT 1;
-        | proc_id |                                message                                
-        +---------+-----------------------------------------------------------------------
-        | web.3   | Starting process with command `bundle exec rackup config.ru -p 24405`
+      %p
+        %a{href: '/404'} Lost kittens in last hour (404)
+
+      %h3 Timeouts
+      %table
+        %tr
+          %th Count
+          %th Method
+          %th Host
+          %th Path
+        - router_timeouts.each do |log|
+          %tr
+            %td= log[:count]
+            %td= log[:method]
+            %td= log[:host]
+            %td= log[:path]
+
+      %h3 500s
+      %table
+        %tr
+          %th Count
+          %th Method
+          %th Host
+          %th Path
+          %th Status
+        - router_500_errors.each do |log|
+          %tr
+            %td= log[:count]
+            %td= log[:method]
+            %td= log[:host]
+            %td= log[:path]
+            %td= log[:status]
+
+      %h3 Postgres Log Events
+      %table
+        %tr
+          %th
+          %th Proc ID
+          %th Message
+        - postgres_events.each do |event|
+          %tr
+            %td= event[:emitted_at].strftime('%b-%d %R')
+            %td= event[:proc_id]
+            %td= event[:message]

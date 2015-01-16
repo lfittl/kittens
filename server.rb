@@ -17,11 +17,33 @@ class HerokuLogDrain < Goliath::API
     when '/drain' then
       store_log(env[Goliath::Request::RACK_INPUT].read) if(env[Goliath::Request::REQUEST_METHOD] == 'POST')
       [200, {}, "drained"]
+    when '/404' then
+      logs = DB[:router_errors].where('emitted_at > ?', 1.hour.ago).to_a
+      logs.each do |log|
+        log[:path] = log[:path].gsub(/\/\d+\//, '/?/').gsub(/=\d+/, '=?')
+      end
+      logs = logs.group_by do |log|
+        log[:method] + log[:host] + log[:path]
+      end
+      logs = logs.map do |group, elems|
+        elems.first.merge(count: elems.size)
+      end
+      logs = logs.sort_by { |l| l[:count] }.reverse
+
+      [200, {}, haml(:not_found, locals: { logs: logs })]
     when '/' then
-      [200, {}, haml(:index, :locals => {
-        :protected => self.class.protected?, :username => ENV['HTTP_AUTH_USER'], :password => ENV['HTTP_AUTH_PASSWORD'],
-        :event_count => DB[:events].count, :env => env
-      })]
+      locals = {
+        protected: self.class.protected?, env: env,
+        username: ENV['HTTP_AUTH_USER'], password: ENV['HTTP_AUTH_PASSWORD']
+      }
+
+      router_errors = DB[:router_errors].where('emitted_at > ?', 24.hours.ago).order(Sequel.desc(:count))
+
+      locals[:router_timeouts]   = router_errors.where(code: 'H12').group_and_count(:method, :host, :path)
+      locals[:router_500_errors] = router_errors.where("status BETWEEN 500 AND 599 AND code NOT IN ('H12', 'H18')").group_and_count(:method, :host, :path, :status)
+      locals[:postgres_events]   = DB[:postgres_events].where('emitted_at > ?', 24.hours.ago).order(Sequel.desc(:emitted_at))
+
+      [200, {}, haml(:index, locals: locals)]
     else
       raise Goliath::Validation::NotFoundError
     end
