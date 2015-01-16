@@ -1,12 +1,22 @@
 %html
-  :css
-    body {
-      font-family: 'proxima-nova', 'Proxima Nova', sans-serif;
-      padding: 1em;
-    }
-    h3 {
-      margin-top: 2em;
-    }
+  %head
+    %title Sad kittens
+    :css
+      body {
+        font-family: 'proxima-nova', 'Proxima Nova', sans-serif;
+        padding: 1em;
+      }
+      h3 {
+        margin-top: 2em;
+      }
+      th, td {
+        text-align: left;
+        padding-right: .5em;
+      }
+      td {
+        font-family: monospace;
+        vertical-align: top;
+      }
 
   %body
     %h2 Sad kittens in the last 24 hours
@@ -21,40 +31,40 @@
       %p
         %a{href: '/404'} Lost kittens in last hour (404)
 
-      %h3 Timeouts (#{router_timeouts.count})
+      %h3 Timeouts (#{timeouts.count})
       %table
         %tr
           %th Count
           %th Method
           %th Host
           %th Path
-        - router_timeouts.each do |log|
+        - timeouts.each do |log|
           %tr
             %td= log[:count]
             %td= log[:method]
             %td= log[:host]
             %td= log[:path]
 
-      %h3 500s (#{router_500_errors.count})
+      %h3 500s (#{server_errors.count})
       %table
         %tr
           %th Count
+          %th Status
           %th Method
           %th Host
           %th Path
-          %th Status
-        - router_500_errors.each do |log|
+        - server_errors.each do |log|
           %tr
             %td= log[:count]
+            %td= log[:status]
             %td= log[:method]
             %td= log[:host]
             %td= log[:path]
-            %td= log[:status]
 
       %h3 Postgres Log Events (#{postgres_events.count})
       %table
         %tr
-          %th
+          %th{style: 'width: 6em'} UTC Time
           %th Proc ID
           %th Message
         - postgres_events.each do |event|

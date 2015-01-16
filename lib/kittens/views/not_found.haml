@@ -1,0 +1,40 @@
+%html
+  %head
+    %title Lost kittens
+    :css
+      body {
+        font-family: 'proxima-nova', 'Proxima Nova', sans-serif;
+        padding: 1em;
+      }
+      h3 {
+        margin-top: 2em;
+      }
+      th, td {
+        text-align: left;
+        padding-right: .5em;
+      }
+      td {
+        font-family: monospace;
+        vertical-align: top;
+      }
+
+  %body
+    %h2 Lost kittens in last hour (#{not_found_errors.count})
+
+    %p
+      %a{href: '/'} Sad kittens in the last 24 hours
+
+    %table
+      %tr
+        %th Count
+        %th Status
+        %th Method
+        %th Host
+        %th Path
+      - not_found_errors.each do |log|
+        %tr
+          %td= log[:count]
+          %td= 404
+          %td= log[:method]
+          %td= log[:host]
+          %td= log[:path]

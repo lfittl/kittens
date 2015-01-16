@@ -1,11 +1,10 @@
-require './config'
+require 'goliath'
 require 'goliath/rack/templates'
 
-class HerokuLogDrain < Goliath::API
+class Kittens::Server < Goliath::API
 
   include Goliath::Rack::Templates
 
-  # If we've explicitly set auth, check for it. Otherwise, buyer-beware!
   if(['HTTP_AUTH_USER', 'HTTP_AUTH_PASSWORD'].any? { |v| !ENV[v].nil? && ENV[v] != '' })
     use Rack::Auth::Basic, "Heroku Log Store" do |username, password|
       authorized?(username, password)
@@ -18,30 +17,16 @@ class HerokuLogDrain < Goliath::API
       store_log(env[Goliath::Request::RACK_INPUT].read) if(env[Goliath::Request::REQUEST_METHOD] == 'POST')
       [200, {}, "drained"]
     when '/404' then
-      logs = DB[:router_errors].where('emitted_at > ? AND status = 404', 1.hour.ago).to_a
-      logs.each do |log|
-        log[:path] = log[:path].gsub(/\/\d+\//, '/?/').gsub(/=\d+/, '=?')
-      end
-      logs = logs.group_by do |log|
-        log[:method] + log[:host] + log[:path]
-      end
-      logs = logs.map do |group, elems|
-        elems.first.merge(count: elems.size)
-      end
-      logs = logs.sort_by { |l| l[:count] }.reverse
-
-      [200, {}, haml(:not_found, locals: { logs: logs })]
+      [200, {}, haml(:not_found, locals: { not_found_errors: Kittens::Stats.not_found_errors })]
     when '/' then
       locals = {
         protected: self.class.protected?, env: env,
         username: ENV['HTTP_AUTH_USER'], password: ENV['HTTP_AUTH_PASSWORD']
       }
 
-      router_errors = DB[:router_errors].where('emitted_at > ?', 24.hours.ago).order(Sequel.desc(:count))
-
-      locals[:router_timeouts]   = router_errors.where(code: 'H12').group_and_count(:method, :host, :path)
-      locals[:router_500_errors] = router_errors.where("status BETWEEN 500 AND 599 AND (code IS NULL OR code NOT IN ('H12', 'H18'))").group_and_count(:method, :host, :path, :status)
-      locals[:postgres_events]   = DB[:postgres_events].where('emitted_at > ?', 24.hours.ago).order(Sequel.desc(:emitted_at))
+      locals[:server_errors]   = Kittens::Stats.server_errors
+      locals[:timeouts]        = Kittens::Stats.timeouts
+      locals[:postgres_events] = Kittens::Stats.postgres_events
 
       [200, {}, haml(:index, locals: locals)]
     else
