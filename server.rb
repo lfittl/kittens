@@ -18,7 +18,7 @@ class HerokuLogDrain < Goliath::API
       store_log(env[Goliath::Request::RACK_INPUT].read) if(env[Goliath::Request::REQUEST_METHOD] == 'POST')
       [200, {}, "drained"]
     when '/404' then
-      logs = DB[:router_errors].where('emitted_at > ?', 1.hour.ago).to_a
+      logs = DB[:router_errors].where('emitted_at > ? AND status = 404', 1.hour.ago).to_a
       logs.each do |log|
         log[:path] = log[:path].gsub(/\/\d+\//, '/?/').gsub(/=\d+/, '=?')
       end
