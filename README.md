@@ -1,6 +1,8 @@
 # kittens
 
-A simple overview over your Heroku router logs to help you find 404s, 500s and Timeouts.
+Log drain target for your Heroku router logs to help you find 404s, 500s and timeouts errors.
+
+![kittens example screenshot](https://dl.dropboxusercontent.com/u/6237890/product_screenshots/kittens.png)
 
 Heavily modified fork of [heroku-log-store](https://github.com/rwdaigle/heroku-log-store), storing log data in an attached PostgreSQL database.
 
@@ -41,12 +43,16 @@ $ heroku drains:add https://myuser:mypassword@my-app-kittens.herokuapp.com/drain
 
 To verify that you are receiving data correctly, view the kittens logs using ```heroku logs --tail```.
 
+Now, if you go to the main page of the app, it should show first data (check the 404 list, that one is easy to test).
+
 ## Slack Notifications
+
+![slack screenshot](https://dl.dropboxusercontent.com/u/6237890/product_screenshots/kittens_slack.png)
 
 To setup daily notifications to Slack, use the Heroku scheduler add-on,
 and have it call ```rake daily_report``` every 24 hours.
 
-In addition set the ```SLACK_WEBHOOK``` variable appropriately.
+In addition set the ```SLACK_WEBHOOK``` and ```APP_URL``` env variables appropriately.
 
 ## Authors
 
